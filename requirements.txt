@@ -1,0 +1,41 @@
+# Smart City Management System - Day 0 Core Dependencies
+# File: requirements.txt
+
+# ============================================================================
+# DATA PROCESSING & ANALYSIS
+# ============================================================================
+pandas==2.1.4              # Data manipulation and analysis
+numpy==1.24.3               # Numerical computing foundation
+openpyxl==3.1.2            # Excel file reading/writing
+
+# ============================================================================
+# MACHINE LEARNING & MODELING  
+# ============================================================================
+scikit-learn==1.3.2        # Machine learning algorithms
+scipy==1.11.4              # Scientific computing
+
+# ============================================================================
+# VISUALIZATION & DASHBOARDS
+# ============================================================================
+plotly==5.17.0             # Interactive plotting
+streamlit==1.28.1          # Web app framework
+folium==0.15.0             # Interactive maps
+
+# ============================================================================
+# DEVELOPMENT & TESTING
+# ============================================================================
+pytest==7.4.3             # Testing framework
+jupyter==1.0.0            # Notebook environment
+ipykernel==6.26.0         # Jupyter kernel
+
+# ============================================================================
+# UTILITIES & HELPERS
+# ============================================================================
+python-dotenv==1.0.0      # Environment variable management
+tqdm==4.66.1               # Progress bars
+requests==2.31.0          # HTTP library
+
+# ============================================================================
+# DATA VALIDATION & QUALITY
+# ============================================================================
+pydantic==2.5.0           # Data validation
