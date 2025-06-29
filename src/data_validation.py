@@ -1,5 +1,5 @@
 # src/data_validation.py
-# Day 1: Data Validation Pipeline for Smart City Data Quality
+# Day 1: Data Quality Validation Pipeline
 
 import pandas as pd
 import numpy as np
@@ -9,18 +9,12 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class SmartCityDataValidator:
-    """
-    Comprehensive data validation pipeline for Lahore Smart City data:
-    - Real government data validation (vehicles, accidents, healthcare)
-    - Synthetic data quality checks (energy, emergency)
-    - Data completeness and consistency verification
-    """
+    """Comprehensive data validation pipeline for Lahore Smart City data"""
     
     def __init__(self):
         self.validation_results = {}
-        self.error_threshold = 0.05  # 5% error tolerance
+        self.error_threshold = 0.05
         
-        # Expected data schemas
         self.schemas = {
             'vehicles': ['Division/ District', 'Total', 'Motor Cars, Jeeps and Station Wagons'],
             'accidents': ['YEAR ', 'PROVINCE', 'DISTRICT', 'ACCIDENT/CAUSALITIES', 'NO OF CASES'],
@@ -57,7 +51,6 @@ class SmartCityDataValidator:
             numeric_cols = [col for col in df.columns if col != 'Division/ District']
             for col in numeric_cols:
                 if col in lahore_records.columns:
-                    # Convert and validate
                     try:
                         cleaned = lahore_records[col].astype(str).str.replace(',', '').str.replace('nan', '0')
                         numeric_values = pd.to_numeric(cleaned, errors='coerce')
@@ -67,7 +60,6 @@ class SmartCityDataValidator:
                             validation['issues'].append(f"Invalid values in {col}: {null_count}")
                             validation['quality_score'] -= 5
                         
-                        # Check for reasonable values
                         if col == 'Total' and not numeric_values.empty:
                             total_vehicles = numeric_values.iloc[0]
                             if total_vehicles < 1000000 or total_vehicles > 10000000:
@@ -92,13 +84,11 @@ class SmartCityDataValidator:
             'lahore_specific': {}
         }
         
-        # Schema validation
         missing_cols = [col for col in self.schemas['accidents'] if col not in df.columns]
         if missing_cols:
             validation['issues'].append(f"Missing columns: {missing_cols}")
             validation['quality_score'] -= 20
         
-        # Lahore data validation
         lahore_records = df[df['DISTRICT'].str.contains('Lahore', case=False, na=False)]
         validation['lahore_specific']['records_found'] = len(lahore_records)
         
@@ -106,7 +96,6 @@ class SmartCityDataValidator:
             validation['issues'].append("No Lahore accident records found")
             validation['quality_score'] -= 30
         else:
-            # Year validation
             if 'YEAR ' in lahore_records.columns:
                 years = pd.to_numeric(lahore_records['YEAR '], errors='coerce')
                 valid_years = years.dropna()
@@ -119,12 +108,10 @@ class SmartCityDataValidator:
                     year_range = f"{valid_years.min()}-{valid_years.max()}"
                     validation['lahore_specific']['year_range'] = year_range
                     
-                    # Check for reasonable year range
                     if valid_years.min() < 2000 or valid_years.max() > datetime.now().year:
                         validation['issues'].append(f"Unusual year range: {year_range}")
                         validation['quality_score'] -= 10
             
-            # Case count validation
             if 'NO OF CASES' in lahore_records.columns:
                 cases = pd.to_numeric(lahore_records['NO OF CASES'], errors='coerce')
                 valid_cases = cases.dropna()
@@ -136,7 +123,6 @@ class SmartCityDataValidator:
                 if not valid_cases.empty:
                     validation['lahore_specific']['total_cases'] = int(valid_cases.sum())
                     
-                    # Check for negative values
                     if (valid_cases < 0).any():
                         validation['issues'].append("Negative case counts found")
                         validation['quality_score'] -= 15
@@ -153,29 +139,24 @@ class SmartCityDataValidator:
             'trends': {}
         }
         
-        # Schema validation
         missing_cols = [col for col in self.schemas['healthcare'] if col not in df.columns]
         if missing_cols:
             validation['issues'].append(f"Missing columns: {missing_cols}")
             validation['quality_score'] -= 20
         
-        # Year continuity check
         if 'Year' in df.columns:
             years = sorted(df['Year'].unique())
             validation['trends']['year_range'] = f"{min(years)}-{max(years)}"
             
-            # Check for gaps in years
             expected_years = list(range(min(years), max(years) + 1))
             missing_years = set(expected_years) - set(years)
             if missing_years:
                 validation['issues'].append(f"Missing years: {sorted(missing_years)}")
                 validation['quality_score'] -= 10
         
-        # Numeric validation
         numeric_cols = ['Hospitals', 'Dispensaries', 'Total Beds']
         for col in numeric_cols:
             if col in df.columns:
-                # Clean and convert
                 cleaned = df[col].astype(str).str.replace(',', '').str.replace('nan', '0')
                 numeric_values = pd.to_numeric(cleaned, errors='coerce')
                 
@@ -184,7 +165,6 @@ class SmartCityDataValidator:
                     validation['issues'].append(f"Invalid values in {col}: {null_count}")
                     validation['quality_score'] -= 5
                 
-                # Trend validation (should generally increase over time)
                 if len(numeric_values) > 1:
                     trend = numeric_values.iloc[-1] - numeric_values.iloc[0]
                     validation['trends'][col] = {
@@ -193,7 +173,6 @@ class SmartCityDataValidator:
                         'change': int(trend)
                     }
                     
-                    # Negative trends might indicate data issues
                     if trend < 0:
                         validation['issues'].append(f"{col} shows negative trend")
                         validation['quality_score'] -= 5
@@ -210,25 +189,21 @@ class SmartCityDataValidator:
             'patterns': {}
         }
         
-        # Schema validation
         missing_cols = [col for col in self.schemas['energy'] if col not in df.columns]
         if missing_cols:
             validation['issues'].append(f"Missing columns: {missing_cols}")
             validation['quality_score'] -= 20
         
-        # Timestamp validation
         if 'timestamp' in df.columns:
             try:
                 timestamps = pd.to_datetime(df['timestamp'])
                 validation['patterns']['time_range'] = f"{timestamps.min()} to {timestamps.max()}"
                 
-                # Check for duplicates
                 duplicates = timestamps.duplicated().sum()
                 if duplicates > 0:
                     validation['issues'].append(f"Duplicate timestamps: {duplicates}")
                     validation['quality_score'] -= 10
                 
-                # Check for gaps
                 time_diff = timestamps.diff().dropna()
                 expected_freq = timedelta(hours=1)
                 irregular_intervals = (time_diff != expected_freq).sum()
@@ -240,25 +215,21 @@ class SmartCityDataValidator:
                 validation['issues'].append(f"Timestamp parsing error: {str(e)}")
                 validation['quality_score'] -= 15
         
-        # Energy value validation
         energy_cols = ['total_consumption_mw', 'residential_mw', 'commercial_mw', 'industrial_mw']
         for col in energy_cols:
             if col in df.columns:
                 values = pd.to_numeric(df[col], errors='coerce')
                 
-                # Check for nulls
                 null_count = values.isnull().sum()
                 if null_count > 0:
                     validation['issues'].append(f"Null values in {col}: {null_count}")
                     validation['quality_score'] -= 5
                 
-                # Check for negative values
                 negative_count = (values < 0).sum()
                 if negative_count > 0:
                     validation['issues'].append(f"Negative values in {col}: {negative_count}")
                     validation['quality_score'] -= 10
                 
-                # Pattern analysis
                 validation['patterns'][col] = {
                     'min': float(values.min()),
                     'max': float(values.max()),
@@ -278,38 +249,32 @@ class SmartCityDataValidator:
             'distribution': {}
         }
         
-        # Schema validation
         missing_cols = [col for col in self.schemas['emergency'] if col not in df.columns]
         if missing_cols:
             validation['issues'].append(f"Missing columns: {missing_cols}")
             validation['quality_score'] -= 20
         
-        # ID uniqueness
         if 'request_id' in df.columns:
             duplicate_ids = df['request_id'].duplicated().sum()
             if duplicate_ids > 0:
                 validation['issues'].append(f"Duplicate request IDs: {duplicate_ids}")
                 validation['quality_score'] -= 15
         
-        # Categorical validation
         categorical_cols = ['service_type', 'priority', 'status']
         for col in categorical_cols:
             if col in df.columns:
                 unique_values = df[col].unique()
                 validation['distribution'][col] = list(unique_values)
                 
-                # Check for null values
                 null_count = df[col].isnull().sum()
                 if null_count > 0:
                     validation['issues'].append(f"Null values in {col}: {null_count}")
                     validation['quality_score'] -= 5
         
-        # Geographic validation
         if 'latitude' in df.columns and 'longitude' in df.columns:
             lat_values = pd.to_numeric(df['latitude'], errors='coerce')
             lon_values = pd.to_numeric(df['longitude'], errors='coerce')
             
-            # Check Lahore bounds (approximately)
             lahore_lat_bounds = (31.3, 31.8)
             lahore_lon_bounds = (74.0, 74.7)
             
@@ -354,11 +319,9 @@ class SmartCityDataValidator:
                     total_datasets += 1
                     total_quality += result['quality_score']
         
-        # Calculate overall quality
         if total_datasets > 0:
             validation_results['overall_quality'] = total_quality / total_datasets
         
-        # Generate summary
         validation_results['summary'] = {
             'datasets_validated': total_datasets,
             'average_quality_score': validation_results['overall_quality'],

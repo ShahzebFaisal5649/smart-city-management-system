@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "pipeline_execution": {
+      "start_time": "2025-06-29T19:01:11.788526",
+      "end_time": "2025-06-29T19:03:18.299000",
+      "duration_minutes": 2.11
+    },
+    "data_collection": {
+      "real_datasets_collected": 2,
+      "synthetic_datasets_generated": 2,
+      "weather_data_available": true
+    },
+    "data_quality": {
+      "overall_quality_score": 98.75,
+      "quality_status": "Excellent",
+      "total_issues": 1,
+      "datasets_validated": 4
+    },
+    "lahore_insights": {
+      "total_vehicles": 13494515,
+      "vehicle_distribution": {
+        "Motor Cars, Jeeps and Station Wagons": 3001825,
+        "Motor Cycles and Scoo- ters": 9359342,
+        "Trucks": 89364,
+        "Pick- ups/ Deli- very Vans": 251163,
+        "Mini Buses/ Buses/ Flying/ Luxury Coaches": 129830,
+        "Taxis": 55871,
+        "Auto Rick- shaws": 442965,
+        "Tractors": 152309,
+        "Other Vehicles": 11846
+      }
+    },
+    "day2_readiness": {
+      "required_components": [
+        "traffic_vehicles",
+        "traffic_accidents",
+        "energy",
+        "emergency"
+      ],
+      "available_components": [
+        "traffic_vehicles",
+        "healthcare",
+        "synthetic_energy",
+        "synthetic_emergency"
+      ],
+      "readiness_score": 0.75,
+      "export_files_created": 6
+    }
+  },
+  "datasets": {
+    "collected": [
+      "traffic_vehicles",
+      "healthcare"
+    ],
+    "synthetic": [
+      "energy",
+      "emergency"
+    ]
+  },
+  "quality_score": 98.75,
+  "export_files": {
+    "traffic_vehicles": "data/processed\\traffic_vehicles_20250629_190313.csv",
+    "healthcare": "data/processed\\healthcare_20250629_190313.csv",
+    "synthetic_energy": "data/processed\\synthetic_energy_20250629_190313.csv",
+    "synthetic_emergency": "data/processed\\synthetic_emergency_20250629_190313.csv",
+    "weather": "data/processed\\weather_data_20250629_190313.json",
+    "validation": "data/processed\\validation_results_20250629_190313.json"
+  },
+  "pipeline_success": true
+}

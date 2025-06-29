@@ -13,13 +13,7 @@ from synthetic_generators import LahoreSyntheticGenerator
 from data_validation import SmartCityDataValidator
 
 class Day1Pipeline:
-    """
-    Complete Day 1 pipeline for Lahore Smart City:
-    1. Collect real government data (replaces NYC/US datasets)
-    2. Generate synthetic data for missing components
-    3. Validate all data quality
-    4. Export results for Day 2 processing
-    """
+    """Complete Day 1 pipeline for Lahore Smart City"""
     
     def __init__(self, weather_api_key: str):
         self.weather_api_key = weather_api_key
@@ -39,7 +33,6 @@ class Day1Pipeline:
         """Execute complete data collection from real sources"""
         collection_results = self.collector.run_collection_pipeline()
         
-        # Extract data for processing
         datasets = {}
         
         if collection_results['traffic']:
@@ -51,7 +44,6 @@ class Day1Pipeline:
         if collection_results['healthcare'] is not None:
             datasets['healthcare'] = collection_results['healthcare']
         
-        # Store weather data separately (not DataFrame)
         if collection_results['weather'] is not None:
             self.results['weather_data'] = collection_results['weather']
         
@@ -63,12 +55,11 @@ class Day1Pipeline:
     def execute_synthetic_generation(self, vehicle_count: Optional[int] = None) -> Dict:
         """Generate synthetic data for missing smart city components"""
         
-        # Determine vehicle count from collected data if not provided
         if vehicle_count is None and 'traffic_vehicles' in self.results['collected_data']:
             vehicles_df = self.results['collected_data']['traffic_vehicles']
             vehicle_count = int(vehicles_df['Total'].sum())
         elif vehicle_count is None:
-            vehicle_count = 6663603  # Default Lahore count
+            vehicle_count = 6663603
         
         synthetic_results = self.generator.generate_all_synthetic_data(vehicle_count)
         
@@ -83,7 +74,6 @@ class Day1Pipeline:
     def execute_data_validation(self) -> Dict:
         """Run comprehensive data validation on all datasets"""
         
-        # Combine real and synthetic data for validation
         all_datasets = {}
         all_datasets.update(self.results['collected_data'])
         all_datasets.update(self.results['synthetic_data'])
@@ -102,28 +92,24 @@ class Day1Pipeline:
         export_paths = {}
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Export real datasets
         for dataset_name, df in self.results['collected_data'].items():
             if df is not None:
                 file_path = os.path.join(output_dir, f"{dataset_name}_{timestamp}.csv")
                 df.to_csv(file_path, index=False)
                 export_paths[dataset_name] = file_path
         
-        # Export synthetic datasets  
         for dataset_name, df in self.results['synthetic_data'].items():
             if df is not None:
                 file_path = os.path.join(output_dir, f"synthetic_{dataset_name}_{timestamp}.csv")
                 df.to_csv(file_path, index=False)
                 export_paths[f"synthetic_{dataset_name}"] = file_path
         
-        # Export weather data
         if 'weather_data' in self.results:
             weather_path = os.path.join(output_dir, f"weather_data_{timestamp}.json")
             with open(weather_path, 'w') as f:
                 json.dump(self.results['weather_data'], f, indent=2)
             export_paths['weather'] = weather_path
         
-        # Export validation results
         validation_path = os.path.join(output_dir, f"validation_results_{timestamp}.json")
         with open(validation_path, 'w') as f:
             json.dump(self.results['validation_results'], f, indent=2)
@@ -151,7 +137,6 @@ class Day1Pipeline:
             'day2_readiness': {}
         }
         
-        # Quality summary
         if 'validation_results' in self.results:
             validation = self.results['validation_results']
             summary['data_quality'] = {
@@ -161,13 +146,11 @@ class Day1Pipeline:
                 'datasets_validated': validation.get('summary', {}).get('datasets_validated', 0)
             }
         
-        # Lahore-specific insights
         if 'traffic_vehicles' in self.results['collected_data']:
             vehicles_df = self.results['collected_data']['traffic_vehicles']
             total_vehicles = int(vehicles_df['Total'].sum())
             summary['lahore_insights']['total_vehicles'] = total_vehicles
             
-            # Vehicle distribution
             vehicle_types = {}
             for col in vehicles_df.columns:
                 if col != 'Division/ District' and col != 'Total':
@@ -180,11 +163,9 @@ class Day1Pipeline:
             accidents_df = self.results['collected_data']['traffic_accidents']
             summary['lahore_insights']['accident_records'] = len(accidents_df)
             
-            # Year range
             years = accidents_df['YEAR '].unique()
             summary['lahore_insights']['accident_year_range'] = f"{min(years)}-{max(years)}"
         
-        # Day 2 readiness assessment
         required_components = ['traffic_vehicles', 'traffic_accidents', 'energy', 'emergency']
         available_components = list(self.results['collected_data'].keys()) + \
                              [f"synthetic_{k}" for k in self.results['synthetic_data'].keys()]
@@ -209,22 +190,12 @@ class Day1Pipeline:
     def run_complete_pipeline(self, output_dir: str = "data/processed") -> Dict:
         """Execute complete Day 1 pipeline"""
         
-        # Step 1: Data Collection
         collected_datasets = self.execute_data_collection()
-        
-        # Step 2: Synthetic Data Generation
         synthetic_datasets = self.execute_synthetic_generation()
-        
-        # Step 3: Data Validation
         validation_results = self.execute_data_validation()
-        
-        # Step 4: Export Results
         export_paths = self.export_datasets(output_dir)
-        
-        # Step 5: Generate Summary
         summary = self.generate_day1_summary()
         
-        # Final results
         final_results = {
             'summary': summary,
             'datasets': {
@@ -242,26 +213,22 @@ class Day1Pipeline:
 if __name__ == "__main__":
     import sys
     
-    # Check for API key
     API_KEY = "a43d06572c2fb3c2b1b6ccd76a8ce7e4"
     
     if not API_KEY:
         print("Error: OpenWeatherMap API key required")
         sys.exit(1)
     
-    # Initialize and run pipeline
     pipeline = Day1Pipeline(weather_api_key=API_KEY)
     
     try:
         results = pipeline.run_complete_pipeline()
         
-        # Display results
         print(f"Day 1 Pipeline Completed Successfully")
         print(f"Quality Score: {results['quality_score']:.1f}%")
         print(f"Datasets: {len(results['datasets']['collected'])} real, {len(results['datasets']['synthetic'])} synthetic")
         print(f"Export Files: {len(results['export_files'])}")
         
-        # Save summary
         with open("day1_summary.json", 'w') as f:
             json.dump(results, f, indent=2)
         

@@ -43,7 +43,6 @@ class DataUtils:
             'data_types': df.dtypes.astype(str).to_dict()
         }
         
-        # Numeric columns summary
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         if len(numeric_cols) > 0:
             summary['numeric_summary'] = df[numeric_cols].describe().to_dict()
@@ -267,7 +266,6 @@ class ConfigUtils:
         if missing_sections:
             errors.append(f"Missing configuration sections: {missing_sections}")
         
-        # Validate city coordinates
         if 'city' in config and 'coordinates' in config['city']:
             coords = config['city']['coordinates']
             if not isinstance(coords, dict) or 'lat' not in coords or 'lon' not in coords:

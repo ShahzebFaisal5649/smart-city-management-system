@@ -1,6 +1,5 @@
 # src/data_collection.py
 # Day 1: Data Collection Pipeline for Lahore Smart City
-# Replaces NYC/US datasets with Punjab government data + synthetic generation
 
 import pandas as pd
 import numpy as np
@@ -13,28 +12,21 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class LahoreDataCollector:
-    """
-    Data collection pipeline for Lahore Smart City Management
-    Maps existing Punjab datasets to smart city categories:
-    - Traffic: Vehicle registration + accident data  
-    - Energy: Synthetic generation based on city patterns
-    - Weather: OpenWeatherMap API for Lahore
-    - Emergency: Synthetic 311-style data based on accidents
-    """
+    """Data collection pipeline for Lahore Smart City Management"""
     
     def __init__(self, weather_api_key: str):
         self.weather_api_key = weather_api_key
         self.lahore_coords = {"lat": 31.5497, "lon": 74.3436}
         self.data_sources = {
-            "traffic_vehicles": "motorvehiclesregisteredbytypedivisionanddistrictthepunjabuptil2021.csv",
-            "traffic_accidents": "accidentsdistrictwisepunjab.xlsx", 
-            "healthcare": "numberofhospitalsdispensariesmaternityruralhealthcentreandnumberofbedsinpakistan2.csv",
-            "traffic_annual": "trafficaccidentsannual.xlsx"
+            "traffic_vehicles": "data/processed/motor-vehicles-registered-by-type-division-and-district-the-punjab-uptil-2021.csv",
+            "traffic_accidents": "data/processed/accidents-district-wise-punjab.xlsx", 
+            "healthcare": "data/processed/number-of-hospitals-dispensaries-maternity-rural-health-centre-and-number-of-beds-in-pakistan-2.csv",
+            "traffic_annual": "data/processed/traffic-accidents-annual.xlsx"
         }
         self.collected_data = {}
     
     def collect_traffic_data(self) -> Dict:
-        """Collect traffic data from vehicle registration and accidents (replaces NYC traffic)"""
+        """Collect traffic data from vehicle registration and accidents"""
         traffic_data = {}
         
         # Vehicle registration data
@@ -57,6 +49,7 @@ class LahoreDataCollector:
             traffic_data['vehicles'] = lahore_vehicles
             
         except Exception as e:
+            print(f"Error collecting vehicle data: {e}")
             traffic_data['vehicles'] = None
         
         # Accident data  
@@ -74,6 +67,7 @@ class LahoreDataCollector:
             traffic_data['accidents'] = lahore_accidents
             
         except Exception as e:
+            print(f"Error collecting accident data: {e}")
             traffic_data['accidents'] = None
         
         self.collected_data['traffic'] = traffic_data
@@ -109,11 +103,12 @@ class LahoreDataCollector:
             return weather_data
             
         except Exception as e:
+            print(f"Error collecting weather data: {e}")
             self.collected_data['weather'] = None
             return None
     
     def collect_healthcare_data(self) -> Optional[pd.DataFrame]:
-        """Collect healthcare infrastructure data (supporting emergency services)"""
+        """Collect healthcare infrastructure data"""
         try:
             df = pd.read_csv(self.data_sources["healthcare"])
             
@@ -129,6 +124,7 @@ class LahoreDataCollector:
             return df
             
         except Exception as e:
+            print(f"Error collecting healthcare data: {e}")
             self.collected_data['healthcare'] = None
             return None
     
@@ -157,32 +153,3 @@ class LahoreDataCollector:
                     collection_results['status'][key] = False
         
         return collection_results
-    
-    def get_data_summary(self) -> Dict:
-        """Generate summary of collected data"""
-        summary = {
-            'lahore_coordinates': self.lahore_coords,
-            'data_sources': len(self.data_sources),
-            'collection_status': {}
-        }
-        
-        if 'traffic' in self.collected_data and self.collected_data['traffic']:
-            traffic = self.collected_data['traffic']
-            if traffic.get('vehicles') is not None:
-                total_vehicles = traffic['vehicles']['Total'].sum()
-                summary['traffic_vehicles'] = int(total_vehicles)
-            
-            if traffic.get('accidents') is not None:
-                total_accidents = len(traffic['accidents'])
-                summary['accident_records'] = total_accidents
-        
-        if 'weather' in self.collected_data and self.collected_data['weather']:
-            weather = self.collected_data['weather']
-            summary['current_temperature'] = weather['main']['temp']
-            summary['weather_status'] = weather['weather'][0]['description']
-        
-        if 'healthcare' in self.collected_data and self.collected_data['healthcare'] is not None:
-            healthcare = self.collected_data['healthcare']
-            summary['healthcare_years'] = f"{healthcare['Year'].min()}-{healthcare['Year'].max()}"
-        
-        return summary
