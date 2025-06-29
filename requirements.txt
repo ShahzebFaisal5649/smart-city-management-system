@@ -1,4 +1,4 @@
-# Smart City Management System - Day 0 Core Dependencies
+# Smart City Management System - Day 1 Lahore Focus
 # File: requirements.txt
 
 # ============================================================================
