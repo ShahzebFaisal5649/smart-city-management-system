@@ -1,9 +1,9 @@
 {
   "summary": {
     "pipeline_execution": {
-      "start_time": "2025-06-29T19:13:00.934258",
-      "end_time": "2025-06-29T19:15:16.873919",
-      "duration_minutes": 2.27
+      "start_time": "2025-06-29T19:27:00.778844",
+      "end_time": "2025-06-29T19:29:32.067575",
+      "duration_minutes": 2.52
     },
     "data_collection": {
       "real_datasets_collected": 2,
@@ -59,12 +59,12 @@
   },
   "quality_score": 98.75,
   "export_files": {
-    "traffic_vehicles": "data/processed\\traffic_vehicles_20250629_191510.csv",
-    "healthcare": "data/processed\\healthcare_20250629_191510.csv",
-    "synthetic_energy": "data/processed\\synthetic_energy_20250629_191510.csv",
-    "synthetic_emergency": "data/processed\\synthetic_emergency_20250629_191510.csv",
-    "weather": "data/processed\\weather_data_20250629_191510.json",
-    "validation": "data/processed\\validation_results_20250629_191510.json"
+    "traffic_vehicles": "data/processed\\traffic_vehicles_20250629_192922.csv",
+    "healthcare": "data/processed\\healthcare_20250629_192922.csv",
+    "synthetic_energy": "data/processed\\synthetic_energy_20250629_192922.csv",
+    "synthetic_emergency": "data/processed\\synthetic_emergency_20250629_192922.csv",
+    "weather": "data/processed\\weather_data_20250629_192922.json",
+    "validation": "data/processed\\validation_results_20250629_192922.json"
   },
   "pipeline_success": true
 }
